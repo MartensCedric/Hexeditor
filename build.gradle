@@ -47,6 +47,7 @@ project(":core") {
 
 
     dependencies {
+        compile project(":HexMap")
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
     }
 }

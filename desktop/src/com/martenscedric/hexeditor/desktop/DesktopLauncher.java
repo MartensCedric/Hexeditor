@@ -1,8 +1,8 @@
-package com.mygdx.hexeditor.desktop;
+package com.martenscedric.hexeditor.desktop;
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import com.mygdx.hexeditor.Hexeditor;
+import com.martenscedric.hexeditor.Hexeditor;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {

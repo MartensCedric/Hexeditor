@@ -14,10 +14,17 @@ import com.badlogic.gdx.math.Vector3;
 import com.cedricmartens.hexmap.coordinate.Point;
 import com.cedricmartens.hexmap.hexagon.*;
 import com.cedricmartens.hexmap.map.HexMap;
+import com.cedricmartens.hexmap.map.freeshape.HexFreeShapeBuilder;
 import com.cedricmartens.hexmap.map.grid.HexGridBuilder;
+import com.martenscedric.hexeditor.map.Map;
+import com.martenscedric.hexeditor.map.Objective;
 import com.martenscedric.hexeditor.tile.BuildingType;
 import com.martenscedric.hexeditor.tile.TileData;
 import com.martenscedric.hexeditor.tile.TileType;
+import flexjson.JSONSerializer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Hexeditor extends ApplicationAdapter {
 
@@ -53,7 +60,7 @@ public class Hexeditor extends ApplicationAdapter {
 	{
 		if(Gdx.input.isKeyJustPressed(Input.Keys.S))
 		{
-
+			saveMap();
 		}
 
 		if(Gdx.input.isKeyJustPressed(Input.Keys.W))
@@ -143,7 +150,56 @@ public class Hexeditor extends ApplicationAdapter {
 			}
 		}
 	}
-	
+
+	private void saveMap()
+	{
+		HexFreeShapeBuilder<TileData> freeShapeBuilder = new HexFreeShapeBuilder<TileData>();
+		freeShapeBuilder.setStyle(grid.getStyle());
+
+
+		List<BuildingType> buildingTypes = new ArrayList<BuildingType>();
+		List<TileType> tileTypes = new ArrayList<TileType>();
+
+		for(int i = 0; i < grid.getHexs().length; i++)
+		{
+			Hexagon<TileData> h = grid.getHexs()[i];
+			if(h.getHexData() != null) {
+				freeShapeBuilder.getHexagons().add(
+						h.getHexGeometry().getMiddlePoint()
+				);
+				buildingTypes.add(h.getHexData().getBuildingType());
+				tileTypes.add(h.getHexData().getTileType());
+			}
+		}
+
+		Map map = new Map();
+		map.setBuilder(freeShapeBuilder);
+		map.setCalculateScore(true);
+		map.setObjectives(new Objective[]{
+				new Objective(new int[]{0, 0, 0, 0, 0, 0, 0, 0}, 25),
+				new Objective(new int[]{0, 0, 0, 0, 0, 0, 0, 0}, 30),
+				new Objective(new int[]{0, 0, 0, 0, 0, 0, 0, 0}, 35)
+		});
+
+		BuildingType[] buildingTypesArr = new BuildingType[buildingTypes.size()];
+
+		for(int i = 0; i < buildingTypes.size(); i++)
+			buildingTypesArr[i] = buildingTypes.get(i);
+
+		TileType[] tileTypesArr = new TileType[tileTypes.size()];
+
+		for(int i = 0; i < tileTypes.size(); i++)
+			tileTypesArr[i] =  tileTypes.get(i);
+
+		map.setBuildingTypes(buildingTypesArr);
+		map.setTileTypes(tileTypesArr);
+
+		JSONSerializer serializer = new JSONSerializer();
+		Gdx.files.local(
+				Integer.toString(map.hashCode()) + ".hexmap"
+		).writeString(serializer.serialize(map), false);
+	}
+
 	@Override
 	public void dispose () {
 		batch.dispose();

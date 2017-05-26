@@ -2,16 +2,22 @@ package com.martenscedric.hexeditor;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.cedricmartens.hexmap.coordinate.Point;
 import com.cedricmartens.hexmap.hexagon.*;
 import com.cedricmartens.hexmap.map.HexMap;
 import com.cedricmartens.hexmap.map.grid.HexGridBuilder;
+import com.martenscedric.hexeditor.tile.BuildingType;
 import com.martenscedric.hexeditor.tile.TileData;
+import com.martenscedric.hexeditor.tile.TileType;
 
 public class Hexeditor extends ApplicationAdapter {
 
@@ -19,9 +25,11 @@ public class Hexeditor extends ApplicationAdapter {
 	private HexMap<TileData> grid;
 	private ShapeRenderer shapeRenderer;
 	private OrthographicCamera camera;
+	private BitmapFont font;
 
 	@Override
 	public void create () {
+		font = new BitmapFont();
 		shapeRenderer = new ShapeRenderer();
 		shapeRenderer.setAutoShapeType(true);
 		camera = new OrthographicCamera();
@@ -43,10 +51,63 @@ public class Hexeditor extends ApplicationAdapter {
 	@Override
 	public void render ()
 	{
+		if(Gdx.input.isKeyJustPressed(Input.Keys.S))
+		{
+
+		}
+
+		if(Gdx.input.isKeyJustPressed(Input.Keys.W))
+		{
+			Vector3 loc = camera.unproject(new Vector3(new Vector2(Gdx.input.getX(), Gdx.input.getY()), 0));
+			Hexagon<TileData> hex = grid.getAt(new Point(loc.x, loc.y));
+
+			if(hex != null)
+			{
+				if(hex.getHexData() == null)
+				{
+					hex.setHexData(new TileData(hex));
+					hex.getHexData().setBuildingType(BuildingType.NONE);
+					hex.getHexData().setTileType(TileType.GRASS);
+				}else{
+					TileType tileType = hex.getHexData().getTileType();
+					if(tileType == null)
+					{
+						hex.getHexData().setTileType(TileType.GRASS);
+					}else if(tileType.ordinal() != TileType.values().length - 1){
+
+						hex.getHexData().setTileType(TileType.values()[tileType.ordinal() + 1]);
+					}else{
+						hex.setHexData(null);
+					}
+				}
+			}
+		}
+
+		if(Gdx.input.isKeyJustPressed(Input.Keys.E))
+		{
+			Vector3 loc = camera.unproject(new Vector3(new Vector2(Gdx.input.getX(), Gdx.input.getY()), 0));
+			Hexagon<TileData> hex = grid.getAt(new Point(loc.x, loc.y));
+
+			if(hex != null)
+			{
+				if(hex.getHexData() != null)
+				{
+					BuildingType buildingType = hex.getHexData().getBuildingType();
+					if(buildingType.ordinal() != BuildingType.values().length - 1){
+						hex.getHexData().setBuildingType(BuildingType.values()[buildingType.ordinal() + 1]);
+					}else{
+						hex.getHexData().setBuildingType(BuildingType.NONE);
+					}
+				}
+			}
+		}
+
+
 		Gdx.gl.glClearColor(0.25f, 0.5f, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		shapeRenderer.setProjectionMatrix(camera.combined);
-		shapeRenderer.begin();
+		batch.setProjectionMatrix(camera.combined);
+
 		for(int i = 0; i < grid.getHexs().length; i++)
 		{
 			Hexagon<TileData> data = grid.getHexs()[i];
@@ -55,6 +116,7 @@ public class Hexeditor extends ApplicationAdapter {
 
 			Point p0 = (Point) geo.getPoints().toArray()[0];
 			Point pLast = (Point) geo.getPoints().toArray()[geo.getPoints().size() - 1];
+			shapeRenderer.begin();
 			shapeRenderer.line((float)p0.x, (float)p0.y,
 					(float)pLast.x, (float)pLast.y,
 					Color.BLACK, Color.BLACK);
@@ -66,8 +128,20 @@ public class Hexeditor extends ApplicationAdapter {
 						(float)precedent.x, (float)precedent.y,
 						Color.BLACK, Color.BLACK);
 			}
+			shapeRenderer.end();
+
+			if(data.getHexData() != null)
+			{
+				batch.begin();
+				if(data.getHexData().getTileType() != null)
+				{
+					font.draw(batch, data.getHexData().getTileType().name(), (int)geo.getMiddlePoint().x - 15, (int)geo.getMiddlePoint().y);
+				}
+
+				font.draw(batch, data.getHexData().getBuildingType().name(), (int)geo.getMiddlePoint().x - 15, (int)geo.getMiddlePoint().y + 15);
+				batch.end();
+			}
 		}
-		shapeRenderer.end();
 	}
 	
 	@Override

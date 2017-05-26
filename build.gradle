@@ -48,6 +48,7 @@ project(":core") {
 
     dependencies {
         compile project(":HexMap")
+        compile group: 'net.sf.flexjson', name: 'flexjson', version: '2.1'
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
     }
 }

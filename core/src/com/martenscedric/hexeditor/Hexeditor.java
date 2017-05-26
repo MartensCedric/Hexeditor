@@ -195,9 +195,13 @@ public class Hexeditor extends ApplicationAdapter {
 		map.setTileTypes(tileTypesArr);
 
 		JSONSerializer serializer = new JSONSerializer();
+		String serialized = serializer.deepSerialize(map);
+
+		String res = serialized.replace("hexeditor", "hexpert");
+
 		Gdx.files.local(
 				Integer.toString(map.hashCode()) + ".hexmap"
-		).writeString(serializer.serialize(map), false);
+		).writeString(res, false);
 	}
 
 	@Override

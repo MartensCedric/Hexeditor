@@ -13,8 +13,8 @@ import static com.martenscedric.hexeditor.misc.Const.BUILDING_COUNT;
  */
 public class Objective
 {
-    private int minScore;
-    private int[] buildingRequirement;
+    public int minScore;
+    public int[] buildingRequirement;
 
     public Objective() {
     }

@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
@@ -29,6 +30,7 @@ import java.util.List;
 public class Hexeditor extends ApplicationAdapter {
 
 	SpriteBatch batch;
+	PolygonSpriteBatch pSpriteBatch;
 	private HexMap<TileData> grid;
 	private ShapeRenderer shapeRenderer;
 	private OrthographicCamera camera;
@@ -39,6 +41,7 @@ public class Hexeditor extends ApplicationAdapter {
 		font = new BitmapFont();
 		shapeRenderer = new ShapeRenderer();
 		shapeRenderer.setAutoShapeType(true);
+		pSpriteBatch = new PolygonSpriteBatch();
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false);
 		batch = new SpriteBatch();
@@ -139,12 +142,34 @@ public class Hexeditor extends ApplicationAdapter {
 
 			if(data.getHexData() != null)
 			{
-				batch.begin();
+
 				if(data.getHexData().getTileType() != null)
 				{
-					font.draw(batch, data.getHexData().getTileType().name(), (int)geo.getMiddlePoint().x - 15, (int)geo.getMiddlePoint().y);
+					pSpriteBatch.setProjectionMatrix(camera.combined);
+					pSpriteBatch.begin();
+
+					int color = 0;
+					switch (data.getHexData().getTileType()) {
+						case GRASS:
+							color = 0x11FF38FF;
+							break;
+						case WATER:
+							color = 0x4286F4FF;
+							break;
+						case SAND:
+							color = 0xe8d17fFF;
+							break;
+						case FOREST:
+							color = 0x284919FF;
+							break;
+					}
+
+					data.getHexData().getSprite(color).draw(pSpriteBatch);
+
+					pSpriteBatch.end();
 				}
 
+				batch.begin();
 				font.draw(batch, data.getHexData().getBuildingType().name(), (int)geo.getMiddlePoint().x - 15, (int)geo.getMiddlePoint().y + 15);
 				batch.end();
 			}

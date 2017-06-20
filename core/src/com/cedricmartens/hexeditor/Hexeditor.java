@@ -6,7 +6,9 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -25,7 +27,10 @@ import com.cedricmartens.hexeditor.tile.TileType;
 import flexjson.JSONSerializer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
+import static com.cedricmartens.hexeditor.tile.TileType.*;
 
 public class Hexeditor extends ApplicationAdapter {
 
@@ -35,6 +40,7 @@ public class Hexeditor extends ApplicationAdapter {
 	private ShapeRenderer shapeRenderer;
 	private OrthographicCamera camera;
 	private BitmapFont font;
+	private HashMap<TileData, PolygonSprite> spriteData = new HashMap<TileData, PolygonSprite>();
 
 	@Override
 	public void create () {
@@ -77,12 +83,12 @@ public class Hexeditor extends ApplicationAdapter {
 				{
 					hex.setHexData(new TileData(hex));
 					hex.getHexData().setBuildingType(BuildingType.NONE);
-					hex.getHexData().setTileType(TileType.GRASS);
+					hex.getHexData().setTileType(GRASS);
 				}else{
 					TileType tileType = hex.getHexData().getTileType();
 					if(tileType == null)
 					{
-						hex.getHexData().setTileType(TileType.GRASS);
+						hex.getHexData().setTileType(GRASS);
 					}else if(tileType.ordinal() != TileType.values().length - 1){
 
 						hex.getHexData().setTileType(TileType.values()[tileType.ordinal() + 1]);
@@ -90,6 +96,20 @@ public class Hexeditor extends ApplicationAdapter {
 						hex.setHexData(null);
 					}
 				}
+
+				if(spriteData.containsKey(hex.getHexData()))
+					spriteData.remove(hex.getHexData());
+
+
+				if(hex.getHexData() != null)
+				{
+
+
+					spriteData.put(hex.getHexData(),
+							getSprite(hex.getHexData(),
+									getColorByTile(hex.getHexData().getTileType())));
+				}
+
 			}
 		}
 
@@ -115,6 +135,7 @@ public class Hexeditor extends ApplicationAdapter {
 
 		Gdx.gl.glClearColor(0.25f, 0.5f, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
 		shapeRenderer.setProjectionMatrix(camera.combined);
 		batch.setProjectionMatrix(camera.combined);
 
@@ -142,30 +163,12 @@ public class Hexeditor extends ApplicationAdapter {
 
 			if(data.getHexData() != null)
 			{
-
 				if(data.getHexData().getTileType() != null)
 				{
 					pSpriteBatch.setProjectionMatrix(camera.combined);
 					pSpriteBatch.begin();
 
-					int color = 0;
-					switch (data.getHexData().getTileType()) {
-						case GRASS:
-							color = 0x11FF38FF;
-							break;
-						case WATER:
-							color = 0x4286F4FF;
-							break;
-						case SAND:
-							color = 0xe8d17fFF;
-							break;
-						case FOREST:
-							color = 0x284919FF;
-							break;
-					}
-
-					data.getHexData().getSprite(color).draw(pSpriteBatch);
-
+					getSprite(data.getHexData(), getColorByTile(data.getHexData().getTileType())).draw(pSpriteBatch);
 					pSpriteBatch.end();
 				}
 
@@ -173,6 +176,40 @@ public class Hexeditor extends ApplicationAdapter {
 				font.draw(batch, data.getHexData().getBuildingType().name(), (int)geo.getMiddlePoint().x - 15, (int)geo.getMiddlePoint().y + 15);
 				batch.end();
 			}
+		}
+	}
+
+	private int getColorByTile(TileType tileType)
+	{
+		int color = 0;
+		switch (tileType) {
+			case GRASS:
+				color = 0x11FF38FF;
+				break;
+			case WATER:
+				color = 0x4286F4FF;
+				break;
+			case SAND:
+				color = 0xe8d17fFF;
+				break;
+			case FOREST:
+				color = 0x284919FF;
+				break;
+		}
+		return color;
+	}
+
+	private PolygonSprite getSprite(TileData data, int color)
+	{
+
+		if(spriteData.containsKey(data))
+		{
+			return spriteData.get(data);
+		}
+		else{
+			PolygonSprite polygonSprite = data.getSprite(color);
+			spriteData.put(data, polygonSprite);
+			return polygonSprite;
 		}
 	}
 
